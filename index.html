@@ -1,85 +1,129 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Sushant Dhakal | Portfolio</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins&amp;display=swap" rel="stylesheet"/>
-<style>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Sushant Dhakal | Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
     * {
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif;
       box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    :root {
+      --primary-color: #4caf50;
+      --text-color: #fff;
+      --bg-overlay: rgba(0, 0, 0, 0.85);
+      --transition: all 0.3s ease;
     }
 
     body {
       background-image: url('background.jpg');
       background-size: cover;
       background-attachment: fixed;
-      color: #fff;
+      color: var(--text-color);
+      line-height: 1.6;
     }
 
+    /* Improved Header */
     header {
       position: fixed;
       top: 0;
       width: 100%;
       height: 80px;
-      background: rgba(0, 0, 0, 0.85);
+      background: var(--bg-overlay);
+      backdrop-filter: blur(10px);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 30px;
+      padding: 0 5%;
       z-index: 999;
+      transition: var(--transition);
+    }
+
+    header.scrolled {
+      height: 70px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
     .logo {
       width: 60px;
       border-radius: 50%;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      transform: scale(1.1);
     }
 
     nav ul {
       display: flex;
-      gap: 20px;
+      gap: 30px;
       list-style: none;
     }
 
     nav ul li a {
       text-decoration: none;
-      color: white;
+      color: var(--text-color);
       font-size: 16px;
+      font-weight: 500;
       position: relative;
+      padding: 5px 0;
+      transition: var(--transition);
     }
 
     nav ul li a::after {
       content: '';
       width: 0;
       height: 2px;
-      background: white;
+      background: var(--primary-color);
       position: absolute;
       left: 0;
-      bottom: -4px;
-      transition: width 0.3s;
+      bottom: 0;
+      transition: var(--transition);
+    }
+
+    nav ul li a:hover {
+      color: var(--primary-color);
     }
 
     nav ul li a:hover::after {
       width: 100%;
     }
 
+    /* Improved Mobile Menu */
     .menu-toggle {
       display: none;
       flex-direction: column;
       cursor: pointer;
+      z-index: 1000;
     }
 
     .bar {
       width: 25px;
-      height: 3px;
-      background: white;
+      height: 2px;
+      background: var(--text-color);
       margin: 4px 0;
+      transition: var(--transition);
     }
 
+    .menu-toggle.active .bar:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .menu-toggle.active .bar:nth-child(2) {
+      opacity: 0;
+    }
+
+    .menu-toggle.active .bar:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+
+    /* Improved Intro Section */
     .intro {
       display: flex;
       flex-wrap: wrap;
@@ -87,10 +131,12 @@
       gap: 40px;
       align-items: center;
       margin: 20vh auto 0;
-      padding: 40px 20px;
-      background-color: rgba(0, 0, 0, 0.7);
-      max-width: 1000px;
-      border-radius: 10px;
+      padding: 60px 40px;
+      background-color: rgba(0, 0, 0, 0.8);
+      max-width: 1200px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
       flex-direction: row-reverse;
     }
 
@@ -98,94 +144,147 @@
       width: 300px;
       border-radius: 20px;
       flex-shrink: 0;
+      transition: var(--transition);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
+    .profile:hover {
+      transform: translateY(-5px);
+    }
+
+    /* Improved Table Styles */
     table {
       border-collapse: collapse;
-      color: white;
+      color: var(--text-color);
       font-size: 18px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    caption h1 {
+      margin-bottom: 20px;
+      font-size: 2.5em;
+      background: linear-gradient(45deg, #4caf50, #2196f3);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     th, td {
-      padding: 10px 15px;
-      border: 1px solid white;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
     }
 
+    th {
+      background: rgba(76, 175, 80, 0.2);
+    }
+
+    /* Improved Container */
     .container {
       width: 90%;
-      max-width: 900px;
-      margin: 40px auto;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 30px;
-      border-radius: 10px;
+      max-width: 1200px;
+      margin: 60px auto;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
     }
 
+    /* Improved Social Links */
     .social-links {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 30px 0;
+      margin: 50px 0;
+      gap: 20px;
+    }
+
+    .social-links h2 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      color: var(--primary-color);
     }
 
     .social-links a {
       display: flex;
       align-items: center;
-      color: white;
+      color: var(--text-color);
       font-size: 18px;
-      font-weight: bold;
-      margin: 10px 0;
+      font-weight: 500;
       text-decoration: none;
-      transition: color 0.3s;
+      padding: 10px 20px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.05);
+      transition: var(--transition);
     }
 
     .social-links a:hover {
-      color: #4caf50;
+      background: var(--primary-color);
+      transform: translateY(-2px);
     }
 
     .social-links img {
-      width: 40px;
-      height: 40px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      margin-right: 10px;
+      margin-right: 15px;
+      transition: var(--transition);
     }
 
+    .social-links a:hover img {
+      transform: rotate(360deg);
+    }
+
+    /* Improved Images */
     img.sus {
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       border-radius: 20px;
-      margin-top: 20px;
-      height: 70%;
+      margin-top: 30px;
+      height: auto;
+      transition: var(--transition);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
 
+    img.sus:hover {
+      transform: scale(1.02);
+    }
+
+    /* Improved Footer */
     footer {
-      background: rgba(0, 0, 0, 0.85);
-      padding: 20px;
+      background: var(--bg-overlay);
+      padding: 30px 20px;
       text-align: center;
-    }
-
-    footer ul {
-      list-style: none;
-      padding: 0;
-      margin-bottom: 10px;
-    }
-
-    footer ul li {
-      display: inline;
-      margin: 0 15px;
-    }
-
-    footer ul li a {
-      color: #aaa;
-      text-decoration: none;
-    }
-
-    footer ul li a:hover {
-      color: white;
+      backdrop-filter: blur(10px);
     }
 
     footer p {
       font-size: 14px;
-      color: #777;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Enhanced About Section */
+    #about h2, #about h3 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
+
+    #about p {
+      margin: 20px 0;
+      line-height: 1.8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .intro {
+        margin: 15vh auto 0;
+        padding: 40px 30px;
+      }
+
+      .container {
+        padding: 30px;
+      }
     }
 
     @media (max-width: 768px) {
@@ -196,12 +295,14 @@
       nav ul {
         display: none;
         flex-direction: column;
-        background: rgba(0, 0, 0, 0.95);
-        position: absolute;
+        background: var(--bg-overlay);
+        position: fixed;
         top: 80px;
-        right: 0;
-        width: 200px;
+        left: 0;
+        width: 100%;
         padding: 20px;
+        backdrop-filter: blur(10px);
+        text-align: center;
       }
 
       nav ul.active {
@@ -211,122 +312,213 @@
       .intro {
         flex-direction: column;
         margin-top: 100px;
-        padding: 20px;
+        padding: 30px 20px;
         text-align: center;
       }
 
       .profile {
-        width: 90%;
+        width: 250px;
+      }
+
+      table {
+        font-size: 16px;
+      }
+
+      caption h1 {
+        font-size: 2em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding: 0 20px;
+      }
+
+      .intro {
+        padding: 20px;
+      }
+
+      .profile {
+        width: 200px;
+      }
+
+      table {
+        font-size: 14px;
+      }
+
+      th, td {
+        padding: 10px;
+      }
+
+      .social-links a {
+        font-size: 16px;
+        padding: 8px 16px;
+      }
+
+      .social-links img {
+        width: 25px;
+        height: 25px;
+      }
+    }
+
+    /* Animation Classes */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
   </style>
 </head>
 <body>
-<header>
-<img alt="Logo" class="logo" src="logo.jpg"/>
-<div class="menu-toggle" id="mobile-menu">
-<span class="bar"></span>
-<span class="bar"></span>
-<span class="bar"></span>
-</div>
-<nav>
-<ul id="nav-links">
-<li><a href="#home">Home</a></li>
-<li><a href="#about">About</a></li>
-<li><a href="#socials">Connect</a></li>
-</ul>
-</nav>
-</header>
-<section class="intro" id="home">
-<img alt="Sushant Dhakal" class="profile" src="me.jpg"/>
-<table>
-<caption><h1>Hello! Welcome to my portfolio website.</h1></caption>
-<tr><th>Name</th><td>Sushant Dhakal</td></tr>
-<tr><th>Phone</th><td>9742354022</td></tr>
-<tr><th>Email</th><td>sushantdhakal98@gmail.com</td></tr>
-</table>
-</section>
+  <header>
+    <img alt="Logo" class="logo" src="logo.jpg"/>
+    <div class="menu-toggle" id="mobile-menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+    <nav>
+      <ul id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#socials">Connect</a></li>
+      </ul>
+    </nav>
+  </header>
 
-<section id="about">
-<div class="container" style="text-align: center; margin-top: 50px;">
-<h2>About Me</h2>
-<p>I’m Sushant Dhakal — a passionate explorer of the mind, body, and digital world. My journey merges ancient discipline with modern innovation.</p>
-<h3>My Core Interests</h3>
-<table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: white;">
-<thead>
-<tr style="background-color: #333;">
-<th style="padding: 12px; border: 1px solid white;">Interest</th>
-<th style="padding: 12px; border: 1px solid white;">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="padding: 12px; border: 1px solid white;"><strong>Boxing &amp; Martial Arts</strong></td>
-<td style="padding: 12px; border: 1px solid white;">I train regularly to sharpen reflexes, build discipline, and stay physically and mentally sharp.</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid white;"><strong>Coding &amp; Tech</strong></td>
-<td style="padding: 12px; border: 1px solid white;">I love solving problems, building creative digital solutions, and exploring the frontiers of AI.</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid white;"><strong>Music</strong></td>
-<td style="padding: 12px; border: 1px solid white;">Playing the guitar helps me express emotion and channel creativity into sound and rhythm.</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid white;"><strong>Yoga &amp; Meditation</strong></td>
-<td style="padding: 12px; border: 1px solid white;">I follow traditional systems to enhance focus, peace, mindfulness and self-awareness.</td>
-</tr>
-<tr>
-<td style="padding: 12px; border: 1px solid white;"><strong>Reading Physiology Novels</strong></td>
-<td style="padding: 12px; border: 1px solid white;">I frequently read human physiology books to improve physical training and deepen body-mind connection.</td>
-</tr>
-</tbody>
-</table><br>
-<h3>Why I Pursue These</h3>
-<p style="margin-top: 20px;">
-      These passions define who I am. Each pursuit builds a different part of me — strength from martial arts, vision through coding, peace via meditation, and insight through ancient sciences. I aim to grow continuously, aligning body, mind, and purpose.
-    </p>
-<img alt="My Interests" class="sus" height="400" src="a.jpg" style="display: block; margin: 30px auto 0;" width="400"/>
-</div>
-</section>
+  <section class="intro fade-in" id="home">
+    <img alt="Sushant Dhakal" class="profile" src="me.jpg"/>
+   <center> <table>
+      <caption><h1>Hello! Welcome to my portfolio website.</h1></caption>
+      <tr><th>Name</th><td>Sushant Dhakal</td></tr>
+      <tr><th>Phone</th><td>9742354022</td></tr>
+      <tr><th>Email</th><td>sushantdhakal98@gmail.com</td></tr> 
+    </table></center>
+  </section>
 
-<section class="social-links" id="socials">
-<h2>Connect with Me</h2>
-<a href="https://www.instagram.com/dhakal_sushant_/" target="_blank">
-<img alt="Instagram" src="insta.jpeg"/> Instagram
+  <section id="about">
+    <div class="container fade-in">
+      <h2>About Me</h2>
+      <p>I'm Sushant Dhakal — a passionate explorer of the mind, body, and digital world. My journey merges ancient discipline with modern innovation.</p>
+      <h3>My Core Interests</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Interest</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Boxing & Martial Arts</strong></td>
+            <td>I train regularly to sharpen reflexes, build discipline, and stay physically and mentally sharp.</td>
+          </tr>
+          <tr>
+            <td><strong>Coding & Tech</strong></td>
+            <td>I love solving problems, building creative digital solutions, and exploring the frontiers of AI.</td>
+          </tr>
+          <tr>
+            <td><strong>Music</strong></td>
+            <td>Playing the guitar helps me express emotion and channel creativity into sound and rhythm.</td>
+          </tr>
+          <tr>
+            <td><strong>Yoga & Meditation</strong></td>
+            <td>I follow traditional systems to enhance focus, peace, mindfulness and self-awareness.</td>
+          </tr>
+          <tr>
+            <td><strong>Reading Physiology Novels</strong></td>
+            <td>I frequently read human physiology books to improve physical training and deepen body-mind connection.</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>Why I Pursue These</h3>
+      <p>
+        These passions define who I am. Each pursuit builds a different part of me — strength from martial arts, vision through coding, peace via meditation, and insight through ancient sciences. I aim to grow continuously, aligning body, mind, and purpose.
+      </p>
+      <img alt="My Interests" class="sus" src="a.jpg"/>
+    </div>
+  </section>
+
+  <section class="social-links fade-in" id="socials">
+    <h2>Connect with Me</h2>
+    <a href="https://www.instagram.com/dhakal_sushant_/" target="_blank">
+      <img alt="Instagram" src="insta.jpeg"/> Instagram
     </a>
-<a href="https://www.facebook.com/sushant.dhakal.7" target="_blank">
-<img alt="Facebook" src="facebook-social-media-icon-3d_466778-4384.avif"/> Facebook
+    <a href="https://www.facebook.com/sushant.dhakal.7" target="_blank">
+      <img alt="Facebook" src="facebook-social-media-icon-3d_466778-4384.avif"/> Facebook
     </a>
-   <a href="https://github.com/Sushant-dhakl" target="_blank">
-  <img src="github.png" alt="GitHub"/> GitHub
-</a>
+    <a href="https://github.com/Sushant-dhakl" target="_blank">
+      <img alt="GitHub" src="github.png"/> GitHub
+    </a>
+  </section>
 
-</section>
-<footer>
-<p>© <span id="year"></span> Sushant Dhakal. All rights reserved.</p>
-</footer>
-<script>
-    // Mobile nav toggle
+  <footer>
+    <p>© <span id="year"></span> Sushant Dhakal. All rights reserved.</p>
+  </footer>
+
+  
+
+  <script>
+    // Mobile nav toggle with improved animation
     const mobileMenu = document.getElementById('mobile-menu');
     const navLinks = document.getElementById('nav-links');
+    const header = document.querySelector('header');
+
     mobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.toggle('active');
       navLinks.classList.toggle('active');
     });
 
-    // Smooth scroll
+    // Smooth scroll with offset
     document.querySelectorAll('a[href^="#"]').forEach(link => {
       link.addEventListener('click', function(e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
         if (target) {
+          const headerHeight = header.offsetHeight;
+          const targetPosition = target.getBoundingClientRect().top + window.pageYOffset;
           window.scrollTo({
-            top: target.offsetTop - 70,
+            top: targetPosition - headerHeight,
             behavior: 'smooth'
           });
+          // Close mobile menu if open
+          mobileMenu.classList.remove('active');
+          navLinks.classList.remove('active');
         }
       });
     });
+
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // Intersection Observer for fade-in animations
+    const fadeElements = document.querySelectorAll('.fade-in');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    fadeElements.forEach(element => observer.observe(element));
 
     // Dynamic year
     document.getElementById('year').textContent = new Date().getFullYear();
