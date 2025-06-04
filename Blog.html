@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Blog</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+     background-image: url('background.jpg');
+      color: #333;
+      font-family: 'Roboto',sans-serif;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    
+    }
+
+    header {
+      background-color: #24292e;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    nav {
+      background: #333;
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem;
+      text-align: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      padding: 2rem;
+    }
+
+    .post {
+      background: white;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .post h2 {
+      margin-bottom: 0.5rem;
+      color: #222;
+    }
+
+    .post p {
+      line-height: 1.6;
+    }
+
+    footer {
+      background: #24292e;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: auto;
+      
+
+    }
+
+    @media (max-width: 600px) {
+      nav {
+        flex-direction: column;
+      }
+
+      nav a {
+        margin: 0.5rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    
+  </nav>
+  <header>
+    <h1>My Personal Blog</h1>
+    <p>Sharing my thoughts and stories</p>
+  </header>
+
+  <div class="container">
+    <div class="post">
+      <h2>Post Title 1</h2>
+      <p>
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vehicula,
+        justo nec feugiat imperdiet, massa turpis convallis metus.
+      </p>
+    </div>
+
+    <div class="post">
+      <h2>Post Title 2</h2>
+      <p>
+        Curabitur in lorem id magna volutpat lacinia. Suspendisse potenti. Etiam
+        nec dui nec augue vulputate tincidunt eget ac turpis.
+      </p>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 Sushant Dhakal. All rights reserved.</p>
+  </footer>
+</body>
+</html>
