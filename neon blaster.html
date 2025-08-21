@@ -19,9 +19,7 @@
       color: var(--fg);
       overflow: hidden;
     }
-    #game {
-      position: fixed; inset: 0; display: grid; place-items: center;
-    }
+    #game { position: fixed; inset: 0; display: grid; place-items: center; }
     canvas { width: min(100vw, 100vh*0.6* (16/9)); height: min(100vh, 100vw*(9/16)); aspect-ratio: 16/9; border-radius: 16px; box-shadow: 0 10px 50px rgba(0,0,0,.6), inset 0 0 40px rgba(56,249,215,.08); background: transparent; }
 
     /* HUD */
@@ -94,8 +92,19 @@
     const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
     const rand = (a, b) => Math.random() * (b - a) + a;
 
-    // Sound (tiny synth using WebAudio)
-    const Audio = (() => {
+    function roundRect(ctx, x, y, w, h, r, color) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+      if (color) { ctx.fillStyle = color; ctx.fill(); }
+    }
+
+    // Sound (tiny synth using WebAudio for sfx)
+    const SFX = (() => {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const master = ctx.createGain(); master.gain.value = 0.08; master.connect(ctx.destination);
       const beep = (f=440, t=0.08, type='square') => {
@@ -106,8 +115,13 @@
         g.gain.exponentialRampToValueAtTime(0.001, now + t);
         o.start(now); o.stop(now + t);
       };
-      return { beep };
+      const resume = () => ctx.resume();
+      return { beep, resume };
     })();
+
+    // Background music (your file ok.mp3)
+    const music = new Audio('ok.mp3');
+    music.loop = true; music.volume = 0.4;
 
     // --- Game state --------------------------------------------------------
     const canvas = document.getElementById('canvas');
@@ -138,8 +152,12 @@
 
     const Keys = { left:false, right:false, fire:false, paused:false, started:false };
 
-    let state;
-    let lastTime = 0; // ms
+    let state; let lastTime = 0; // ms
+
+    // Load player ship image
+    const shipImg = new Image();
+    shipImg.src = 'image.png';
+    let shipReady = false; shipImg.onload = () => shipReady = true;
 
     function resetGame() {
       state = {
@@ -153,7 +171,7 @@
         particles: [],
         power: { type: 'None', t: 0 },
         player: {
-          x: W/2, y: H-90, w: 56, h: 24, speed: 480,
+          x: W/2, y: H-90, w: 64, h: 36, speed: 480,
           cooldown: 0, baseCooldown: 280, // ms
           shield: 0
         }
@@ -168,8 +186,17 @@
       const speed = rand(60, 140) + state.level * 6;
       const swayAmp = rand(10, 60), swayFreq = rand(0.6, 1.6);
       const hp = Math.random() < Math.min(0.1 + state.level*0.01, 0.45) ? 2 : 1;
-      state.enemies.push({ x, y, w, h, speed, swayAmp, swayFreq, t: 0, hp });
+      state.enemies.push({ x, y, w, h, speed, swayAmp, swayFreq, t: 0, hp, boss:false });
     }
+
+    function spawnBoss() {
+      const w = 200, h = 120;
+      const x = W/2, y = -140;
+      const speed = 50; // slow glide
+      const hp = 300 + state.level * 70; // very tough every 5th level
+      state.enemies.push({ x, y, w, h, speed, swayAmp: 120, swayFreq: 0.8, t: 0, hp, boss:true });
+    } 
+    
 
     function shoot() {
       const p = state.player;
@@ -180,7 +207,7 @@
         state.bullets.push({ x: p.x, y: p.y-20, vx: Math.sin(angle)*300, vy: -600, r: 4 });
       }
       p.cooldown = Math.max(60, p.baseCooldown - state.level*8 - (state.power.type==='Rapid'?140:0));
-      Audio.beep(760, 0.05, 'square');
+      SFX.beep(760, 0.05, 'square');
     }
 
     function damagePlayer() {
@@ -188,7 +215,7 @@
       if (p.shield > 0) { p.shield = 0; puff(p.x, p.y, '#6c5ce7'); return; }
       state.lives--; screenShake(10);
       puff(p.x, p.y, '#ff4d6d', 22);
-      Audio.beep(160, 0.2, 'sawtooth');
+      SFX.beep(160, 0.2, 'sawtooth');
       if (state.lives <= 0) gameOver();
       updateHUD();
     }
@@ -204,9 +231,9 @@
     }
 
     function pickupPower(p) {
-      if (p.type === 'Life') { state.lives = Math.min(5, state.lives+1); Audio.beep(520, 0.12, 'triangle'); }
-      if (p.type === 'Shield') { state.player.shield = 1; Audio.beep(420, 0.1, 'sine'); }
-      if (p.type === 'Rapid') { state.power = { type:'Rapid', t: 8000 }; Audio.beep(920, 0.12, 'square'); }
+      if (p.type === 'Life') { state.lives = Math.min(5, state.lives+1); SFX.beep(520, 0.12, 'triangle'); }
+      if (p.type === 'Shield') { state.player.shield = 1; SFX.beep(420, 0.1, 'sine'); }
+      if (p.type === 'Rapid') { state.power = { type:'Rapid', t: 8000 }; SFX.beep(920, 0.12, 'square'); }
       updateHUD();
     }
 
@@ -243,15 +270,26 @@
       state.spawnTimer -= dt;
       const interval = Math.max(240 - state.level*8, 80);
       if (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer = interval; }
-      if (Math.floor(state.time/8000) + 1 > state.level) { state.level++; updateHUD(); Audio.beep(500, .08, 'triangle'); }
+
+      // Level progression
+      if (Math.floor(state.time/8000) + 1 > state.level) {
+        state.level++;
+        updateHUD();
+        SFX.beep(500, .08, 'triangle');
+        if (state.level % 5 === 0) spawnBoss();
+      }
 
       // Enemies
       for (const e of state.enemies) {
         e.t += dt/1000;
         e.y += e.speed * dt/1000;
-        e.x += Math.sin(e.t*e.swayFreq)*e.swayAmp * dt/1000;
+        if (e.boss) {
+          e.x = W/2 + Math.sin(e.t*e.swayFreq*2) * e.swayAmp;
+        } else {
+          e.x += Math.sin(e.t*e.swayFreq)*e.swayAmp * dt/1000;
+        }
       }
-      state.enemies = state.enemies.filter(e => e.y < H + 40);
+      state.enemies = state.enemies.filter(e => e.y < H + 60 && e.hp > 0);
 
       // Bullets
       for (const b of state.bullets) { b.x += b.vx*dt/1000; b.y += b.vy*dt/1000; }
@@ -263,16 +301,16 @@
           if (Math.abs(b.x - e.x) < (e.w/2+6) && Math.abs(b.y - e.y) < (e.h/2+6)) {
             e.hp--; b.y = -9999; // mark for removal
             if (e.hp <= 0) {
-              state.score += 10; puff(e.x, e.y, '#38f9d7', 18); screenShake(6); maybeDropPowerup(e.x, e.y);
+              state.score += e.boss ? 500 : 10;
+              puff(e.x, e.y, '#38f9d7', e.boss?32:18); screenShake(e.boss?12:6); maybeDropPowerup(e.x, e.y);
             } else {
               puff(e.x, e.y, '#ffd166', 6);
             }
-            Audio.beep(860, 0.05, 'square');
+            SFX.beep(860, 0.05, 'square');
           }
         }
       }
       state.bullets = state.bullets.filter(b => b.y > -900);
-      state.enemies = state.enemies.filter(e => e.hp > 0);
 
       // Player collision with enemy
       for (const e of state.enemies) {
@@ -313,14 +351,16 @@
       }
       ctx.globalAlpha = 1;
 
-      // Player ship
+      // Player ship (use image.png)
       const p = state.player; ctx.save(); ctx.translate(p.x+offX, p.y+offY);
-      // body
-      ctx.fillStyle = '#0ff'; ctx.shadowColor = '#38f9d7'; ctx.shadowBlur = 16;
-      roundRect(ctx, -p.w/2, -p.h/2, p.w, p.h, 8, '#38f9d7');
-      // nose
-      ctx.fillStyle = '#6c5ce7'; roundRect(ctx, -10, -p.h/2-10, 20, 14, 6, '#6c5ce7');
-      // shield
+      if (shipReady) {
+        ctx.drawImage(shipImg, -p.w/2, -p.h/2, p.w, p.h);
+      } else {
+        // fallback vector ship if image not yet loaded
+        ctx.fillStyle = '#0ff'; ctx.shadowColor = '#38f9d7'; ctx.shadowBlur = 16;
+        roundRect(ctx, -p.w/2, -p.h/2, p.w, p.h, 8, '#38f9d7');
+        ctx.fillStyle = '#6c5ce7'; roundRect(ctx, -10, -p.h/2-10, 20, 14, 6, '#6c5ce7');
+      }
       if (p.shield>0) { ctx.strokeStyle = 'rgba(108,92,231,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, -2, 36, 0, Math.PI*2); ctx.stroke(); }
       ctx.restore();
 
@@ -332,7 +372,12 @@
       // Enemies
       for (const e of state.enemies) {
         ctx.save(); ctx.translate(e.x+offX, e.y+offY);
-        roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 6, e.hp>1?'#ffd166':'#ff4d6d');
+        if (e.boss) {
+          roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 20, '#ffd166');
+          ctx.lineWidth = 3; ctx.strokeStyle = '#ff4d6d'; ctx.stroke();
+        } else {
+          roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 6, e.hp>1?'#ffd166':'#ff4d6d');
+        }
         ctx.restore();
       }
 
@@ -352,18 +397,6 @@
       ctx.restore();
     }
 
-    function roundRect(ctx, x, y, w, h, r, stroke) {
-      ctx.beginPath();
-      ctx.moveTo(x+r, y);
-      ctx.arcTo(x+w, y, x+w, y+h, r);
-      ctx.arcTo(x+w, y+h, x, y+h, r);
-      ctx.arcTo(x, y+h, x, y, r);
-      ctx.arcTo(x, y, x+w, y, r);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fill();
-      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke(); }
-    }
-
     function updateHUD() {
       hud.score.textContent = state.score;
       hud.level.textContent = state.level;
@@ -375,6 +408,7 @@
       overlays.final.textContent = state.score;
       toggleOverlay('over', true);
       Keys.started = false;
+      try { music.pause(); } catch {}
     }
 
     function toggleOverlay(name, on) {
@@ -389,7 +423,9 @@
       toggleOverlay('pause', false);
       toggleOverlay('over', false);
       Keys.started = true; Keys.paused = false;
-      Audio.beep(660, 0.12, 'triangle');
+      SFX.resume();
+      music.play().catch(()=>{});
+      SFX.beep(660, 0.12, 'triangle');
     }
 
     // --- Input -------------------------------------------------------------
@@ -398,13 +434,22 @@
       if (e.code === 'ArrowRight' || e.code==='KeyD') Keys.right = true;
       if (e.code === 'Space') { Keys.fire = true; e.preventDefault(); }
       if (e.code === 'Enter') { if (!Keys.started) startGame(); }
-      if (e.code === 'KeyP') { if (Keys.started) { Keys.paused = !Keys.paused; toggleOverlay('pause', Keys.paused); } }
+      if (e.code === 'KeyP') {
+        if (Keys.started) {
+          Keys.paused = !Keys.paused; toggleOverlay('pause', Keys.paused);
+          try { if (Keys.paused) music.pause(); else music.play().catch(()=>{}); } catch {}
+        }
+      }
     });
     window.addEventListener('keyup', (e) => {
       if (e.code === 'ArrowLeft' || e.code==='KeyA') Keys.left = false;
       if (e.code === 'ArrowRight' || e.code==='KeyD') Keys.right = false;
       if (e.code === 'Space') Keys.fire = false;
     });
+
+    // UI buttons
+    btns.start.addEventListener('click', startGame);
+    btns.restart.addEventListener('click', startGame);
 
     // Mobile buttons
     const hold = (el, fnDown, fnUp) => {
@@ -431,12 +476,7 @@
       if (Keys.started) draw();
       requestAnimationFrame(loop);
     }
-
     requestAnimationFrame(loop);
-
-    // UI buttons
-    btns.start.addEventListener('click', startGame);
-    btns.restart.addEventListener('click', startGame);
   </script>
 </body>
 </html>
