@@ -119,7 +119,7 @@
       return { beep, resume };
     })();
 
-    // Background music (your file ok.mp3)
+    // Background music (ok.mp3)
     const music = new Audio('ok.mp3');
     music.loop = true; music.volume = 0.4;
 
@@ -159,6 +159,11 @@
     shipImg.src = 'image.png';
     let shipReady = false; shipImg.onload = () => shipReady = true;
 
+    // Load boss image
+    const bossImg = new Image();
+    bossImg.src = 'boss.png';
+    let bossReady = false; bossImg.onload = () => bossReady = true;
+
     function resetGame() {
       state = {
         score: 0,
@@ -189,14 +194,17 @@
       state.enemies.push({ x, y, w, h, speed, swayAmp, swayFreq, t: 0, hp, boss:false });
     }
 
+    // Boss that stays near the top and shoots at player; will not despawn until defeated
     function spawnBoss() {
       const w = 200, h = 120;
-      const x = W/2, y = -140;
-      const speed = 50; // slow glide
-      const hp = 300 + state.level * 70; // very tough every 5th level
-      state.enemies.push({ x, y, w, h, speed, swayAmp: 120, swayFreq: 0.8, t: 0, hp, boss:true });
-    } 
-    
+      const x = W/2, y = 120; // boss stays near top
+      const speed = 40; // slow sway
+      const hp = 300 + state.level * 70;
+      state.enemies.push({
+        x, y, w, h, speed, swayAmp: 120, swayFreq: 0.8,
+        t: 0, hp, boss: true, fireCooldown: 2000 // ms
+      });
+    }
 
     function shoot() {
       const p = state.player;
@@ -271,7 +279,7 @@
       const interval = Math.max(240 - state.level*8, 80);
       if (state.spawnTimer <= 0) { spawnEnemy(); state.spawnTimer = interval; }
 
-      // Level progression
+      // Level progression (boss every 5th level)
       if (Math.floor(state.time/8000) + 1 > state.level) {
         state.level++;
         updateHUD();
@@ -282,21 +290,42 @@
       // Enemies
       for (const e of state.enemies) {
         e.t += dt/1000;
-        e.y += e.speed * dt/1000;
         if (e.boss) {
+          // Boss hovers and shoots
           e.x = W/2 + Math.sin(e.t*e.swayFreq*2) * e.swayAmp;
+
+          e.fireCooldown -= dt;
+          if (e.fireCooldown <= 0) {
+            e.fireCooldown = 1500; // shoot every 1.5s
+            state.bullets.push({
+              x: e.x, y: e.y + 40,
+              vx: (p.x - e.x) / 1.2,
+              vy: 200,
+              r: 6,
+              enemy: true
+            });
+            SFX.beep(200, 0.15, 'sawtooth');
+          }
         } else {
+          // Regular enemies drift downward with sway
+          e.y += e.speed * dt/1000;
           e.x += Math.sin(e.t*e.swayFreq)*e.swayAmp * dt/1000;
         }
       }
-      state.enemies = state.enemies.filter(e => e.y < H + 60 && e.hp > 0);
+
+      // Prevent boss from auto-removal; regular enemies despawn off-screen
+      state.enemies = state.enemies.filter(e => (!e.boss && e.y < H + 60 && e.hp > 0) || (e.boss && e.hp > 0));
 
       // Bullets
-      for (const b of state.bullets) { b.x += b.vx*dt/1000; b.y += b.vy*dt/1000; }
-      state.bullets = state.bullets.filter(b => b.y > -30 && b.x>-20 && b.x < W+20);
-
-      // Collisions (bullet vs enemy)
       for (const b of state.bullets) {
+        b.x += (b.vx || 0) * dt/1000;
+        b.y += b.vy * dt/1000;
+      }
+      state.bullets = state.bullets.filter(b => b.y > -30 && b.y < H+30 && b.x > -20 && b.x < W+20);
+
+      // Collisions (player bullets vs enemies)
+      for (const b of state.bullets) {
+        if (b.enemy) continue; // ignore enemy bullets here
         for (const e of state.enemies) {
           if (Math.abs(b.x - e.x) < (e.w/2+6) && Math.abs(b.y - e.y) < (e.h/2+6)) {
             e.hp--; b.y = -9999; // mark for removal
@@ -312,7 +341,15 @@
       }
       state.bullets = state.bullets.filter(b => b.y > -900);
 
-      // Player collision with enemy
+      // Enemy bullets hitting player
+      for (const b of state.bullets) {
+        if (b.enemy && Math.abs(b.x - p.x) < (p.w/2) && Math.abs(b.y - p.y) < (p.h/2)) {
+          damagePlayer();
+          b.y = -9999; // remove bullet
+        }
+      }
+
+      // Player collision with enemy bodies
       for (const e of state.enemies) {
         if (Math.abs(e.x - p.x) < (e.w/2 + p.w/2 - 6) && Math.abs(e.y - p.y) < (e.h/2 + p.h/2 - 2)) {
           damagePlayer(); e.hp = 0; puff(e.x, e.y, '#ff4d6d', 10);
@@ -322,7 +359,7 @@
       // Particles
       for (const s of state.particles) {
         if (s.kind === 'spark') { s.t += dt; s.x += s.vx*dt/1000; s.y += s.vy*dt/1000; }
-        if (s.kind === 'power') { s.t += dt; s.y += s.vy*dt/1000; // pickup
+        if (s.kind === 'power') { s.t += dt; s.y += s.vy*dt/1000;
           if (Math.abs(s.x - p.x) < 22 && Math.abs(s.y - p.y) < 22) { pickupPower(s); s.t = 9999; }
         }
       }
@@ -351,7 +388,7 @@
       }
       ctx.globalAlpha = 1;
 
-      // Player ship (use image.png)
+      // Player ship
       const p = state.player; ctx.save(); ctx.translate(p.x+offX, p.y+offY);
       if (shipReady) {
         ctx.drawImage(shipImg, -p.w/2, -p.h/2, p.w, p.h);
@@ -364,17 +401,25 @@
       if (p.shield>0) { ctx.strokeStyle = 'rgba(108,92,231,0.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, -2, 36, 0, Math.PI*2); ctx.stroke(); }
       ctx.restore();
 
-      // Bullets
-      ctx.shadowColor = '#38f9d7'; ctx.shadowBlur = 12; ctx.fillStyle = '#38f9d7';
-      for (const b of state.bullets) { ctx.beginPath(); ctx.arc(b.x+offX, b.y+offY, b.r, 0, Math.PI*2); ctx.fill(); }
+      // Bullets (cyan player, red enemy)
+      ctx.shadowColor = '#38f9d7'; ctx.shadowBlur = 12;
+      for (const b of state.bullets) {
+        ctx.beginPath();
+        ctx.fillStyle = b.enemy ? '#ff4d6d' : '#38f9d7';
+        ctx.arc(b.x+offX, b.y+offY, b.r, 0, Math.PI*2);
+        ctx.fill();
+      }
       ctx.shadowBlur = 0;
 
-      // Enemies
+      // Enemies (boss uses image)
       for (const e of state.enemies) {
         ctx.save(); ctx.translate(e.x+offX, e.y+offY);
         if (e.boss) {
-          roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 20, '#ffd166');
-          ctx.lineWidth = 3; ctx.strokeStyle = '#ff4d6d'; ctx.stroke();
+          if (bossReady) {
+            ctx.drawImage(bossImg, -e.w/2, -e.h/2, e.w, e.h);
+          } else {
+            roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 20, '#ffd166');
+          }
         } else {
           roundRect(ctx, -e.w/2, -e.h/2, e.w, e.h, 6, e.hp>1?'#ffd166':'#ff4d6d');
         }
@@ -424,7 +469,7 @@
       toggleOverlay('over', false);
       Keys.started = true; Keys.paused = false;
       SFX.resume();
-      music.play().catch(()=>{});
+      music.play().catch(()=>{}); // will start after user interaction
       SFX.beep(660, 0.12, 'triangle');
     }
 
