@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gallery</title>
+  <style>
+   body {
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-attachment: fixed;
+      color: var(--text-color);
+      line-height: 1.6;
+    }
+
+
+    /* Navbar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #1e1e1e;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      height: 40px;
+      border-radius: 5px;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      color: azure;
+    }
+
+    nav ul {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: var(--text-color);
+      font-size: 16px;
+      font-weight: 500;
+      position: relative;
+      padding: 5px 0;
+      transition: var(--transition);
+    }
+
+    nav ul li a::after {
+      content: '';
+      width: 0;
+      height: 2px;
+      background: var(--primary-color);
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      transition: var(--transition);
+    }
+
+    nav ul li a:hover {
+      color: var(--primary-color);
+    }
+
+    nav ul li a:hover::after {
+      width: 100%;
+    }
+
+
+    /* Mobile Menu Toggle */
+    .menu-toggle {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    .bar {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+      margin: 4px 0;
+      transition: 0.4s;
+    }
+
+    /* Gallery */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .gallery img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .gallery img:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    .modal-content {
+      max-width: 90%;
+      max-height: 80%;
+      border-radius: 10px;
+      transition: transform 0.3s;
+    }
+
+    .close {
+      position: absolute;
+      top: 20px; right: 30px;
+      color: white;
+      font-size: 2.5rem;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .close:hover {
+      color: #ff5555;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      nav ul {
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        width: 200px;
+        background-color: #1e1e1e;
+        display: none;
+        border-radius: 5px;
+      }
+
+      nav ul li {
+        margin: 15px 0;
+        text-align: center;
+      }
+
+      .menu-toggle {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <img alt="Logo" class="logo" src="logo.jpg"/>
+  <div class="menu-toggle" id="mobile-menu">
+    <span class="bar"></span>
+    <span class="bar"></span>
+    <span class="bar"></span>
+  </div>
+  <nav>
+    <ul id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#socials">Connect</a></li>
+      <li><a href="g.html">Gallery</a></li>
+      <li><a href="neon blaster.html">Project No 1</a></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="gallery">
+  <img src="a.jpg" alt="Gallery Image 1">
+  <img src="b.jpg" alt="Gallery Image 2">
+  <img src="c.jpg" alt="Gallery Image 3">
+  <img src="d.jpg" alt="Gallery Image 4">
+  <img src="e.jpg" alt="Gallery Image 5">
+  <img src="f.jpg" alt="Gallery Image 6">
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal">
+  <span class="close" onclick="closeModal()">&times;</span>
+  <img class="modal-content" id="modalImage" />
+</div>
+
+<script>
+  // Gallery Modal
+  const images = document.querySelectorAll('.gallery img');
+  const modal = document.getElementById('modal');
+  const modalImage = document.getElementById('modalImage');
+  let currentIndex = 0;
+
+  function openModal(index) {
+    currentIndex = index;
+    modal.style.display = 'flex';
+    modalImage.src = images[currentIndex].src;
+  }
+
+  images.forEach((img, index) => {
+    img.addEventListener('click', () => openModal(index));
+  });
+
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  function showNext() {
+    currentIndex = (currentIndex + 1) % images.length;
+    modalImage.src = images[currentIndex].src;
+  }
+
+  function showPrev() {
+    currentIndex = (currentIndex - 1 + images.length) % images.length;
+    modalImage.src = images[currentIndex].src;
+  }
+
+  window.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+
+  window.addEventListener('keydown', e => {
+    if (modal.style.display === 'flex') {
+      if (e.key === 'ArrowRight') showNext();
+      if (e.key === 'ArrowLeft') showPrev();
+      if (e.key === 'Escape') closeModal();
+    }
+  });
+
+  let startX = 0;
+  modalImage.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+  modalImage.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (diff > 50) showPrev();
+    else if (diff < -50) showNext();
+  });
+
+  // Mobile Menu Toggle
+  const menuToggle = document.getElementById('mobile-menu');
+  const navLinks = document.getElementById('nav-links');
+
+  menuToggle.addEventListener('click', () => {
+    navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
+  });
+</script>
+
+</body>
+</html>
