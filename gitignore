@@ -1,0 +1,6 @@
+# API key file — never push this to GitHub
+config.js
+
+# OS files
+.DS_Store
+Thumbs.db
