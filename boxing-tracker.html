@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boxing & Training Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #111014; --surface: #1a191e; --surface2: #222128; --border: #2e2c35;
+  --accent: #ff3c2e; --gold: #f5c542; --blue: #3a9eff; --green: #5cba5c;
+  --text: #f4f3f7; --muted: #666370;
+  --light-c: #3a9eff; --moderate-c: #f5c542; --hard-c: #ff3c2e;
+  --radius: 6px;
+}
+body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(255,60,46,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 40% 60% at 10% 80%, rgba(58,158,255,0.04) 0%, transparent 60%);
+}
+.app { max-width: 960px; margin: 0 auto; padding: 28px 20px 80px; position: relative; z-index: 1; }
+
+/* HEADER */
+header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+.header-left h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 900; line-height: 0.95; text-transform: uppercase; letter-spacing: -1px; }
+.header-left h1 em { font-style: normal; color: var(--accent); }
+.header-left p { margin-top: 8px; font-size: 13px; color: var(--muted); max-width: 380px; line-height: 1.6; }
+.progress-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.progress-ring-wrap svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
+.ring-fill { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+.ring-label { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; }
+
+/* TIP BANNER */
+.tip-banner { background: linear-gradient(135deg, rgba(255,60,46,0.1), rgba(245,197,66,0.05)); border: 1px solid rgba(255,60,46,0.22); border-radius: var(--radius); padding: 13px 18px; margin-bottom: 24px; display: flex; gap: 12px; }
+.tip-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.tip-content { font-size: 12.5px; color: #c0bec9; line-height: 1.65; }
+.tip-content strong { color: var(--gold); }
+
+/* TIMER */
+.timer-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; margin-bottom: 26px; }
+.section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 2.5px; color: var(--muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.timer-layout { display: grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items: center; }
+.timer-display { text-align: center; }
+.timer-phase { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 2px; transition: color 0.3s; }
+.timer-phase.work { color: var(--accent); } .timer-phase.rest { color: var(--blue); } .timer-phase.idle { color: var(--muted); }
+.timer-clock { font-family: 'Barlow Condensed', sans-serif; font-size: 76px; font-weight: 900; line-height: 1; letter-spacing: -2px; transition: color 0.3s; }
+.timer-clock.work { color: var(--accent); } .timer-clock.rest { color: var(--blue); } .timer-clock.idle { color: var(--text); }
+.timer-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.timer-divider { width: 1px; height: 80px; background: var(--border); }
+.rounds-display { font-family: 'Barlow Condensed', sans-serif; text-align: center; margin-bottom: 10px; }
+.rounds-num { font-size: 36px; font-weight: 900; color: var(--gold); line-height: 1; }
+.rounds-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.rounds-adj { display: flex; gap: 6px; justify-content: center; }
+.btn-round-adj { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 30px; height: 30px; border-radius: 4px; font-size: 17px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.btn-round-adj:hover { border-color: var(--accent); color: var(--accent); }
+.timer-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+.btn { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; border: none; border-radius: 4px; cursor: pointer; transition: all 0.15s; padding: 8px 16px; }
+.btn:active { transform: scale(0.96); }
+.btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #ff5547; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); } .btn-secondary:hover { border-color: var(--muted); }
+.timer-progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 16px; overflow: hidden; }
+.timer-progress-fill { height: 100%; border-radius: 2px; transition: width 0.9s linear, background 0.3s; background: var(--accent); }
+@keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(255,60,46,0)} 50%{box-shadow:0 0 0 12px rgba(255,60,46,0.18)} }
+.timer-clock.pulse { animation: pulse-red 0.6s 2; }
+
+/* WEEK TABS */
+.week-tabs { display: flex; gap: 3px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 2px; }
+.week-tab { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 8px 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; flex-shrink: 0; }
+.week-tab:hover { color: var(--text); border-color: var(--muted); }
+.week-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.week-tab.all-done { border-color: #3a6e3a; color: var(--green); }
+.week-tab.all-done.active { background: #1e3d1e; border-color: var(--green); color: var(--green); }
+
+/* DAY VIEW */
+.day-view { animation: fadeUp 0.2s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.day-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; flex-wrap: wrap; }
+.day-name { font-family: 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 900; text-transform: uppercase; }
+.day-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 3px 10px; border-radius: 3px; background: rgba(245,197,66,0.12); color: var(--gold); border: 1px solid rgba(245,197,66,0.28); }
+
+/* SESSION PANELS */
+.sessions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:640px){ .sessions-grid{grid-template-columns:1fr;} .timer-layout{grid-template-columns:1fr;} .timer-divider{display:none;} }
+
+.session-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: opacity 0.3s; }
+.session-panel.done-panel { opacity: 0.52; }
+.session-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 11px; border-bottom: 1px solid var(--border); }
+.session-time-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+.session-header-right { display: flex; align-items: center; gap: 10px; }
+.session-count { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; color: var(--muted); }
+.session-type-icon { font-size: 16px; }
+
+.session-body { padding: 14px 16px 16px; }
+.session-name { font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800; text-transform: uppercase; line-height: 1.1; margin-bottom: 4px; }
+.session-panel.done-panel .session-name { text-decoration: line-through; text-decoration-color: var(--muted); }
+.session-focus { font-size: 11px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.intensity-badge { font-size: 10px; font-weight: 600; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; letter-spacing: 1.5px; padding: 3px 9px; border-radius: 3px; display: inline-block; margin-bottom: 12px; }
+.intensity-badge.light   { background: rgba(58,158,255,0.12);  color: var(--light-c);    border: 1px solid rgba(58,158,255,0.28); }
+.intensity-badge.moderate{ background: rgba(245,197,66,0.12);  color: var(--moderate-c); border: 1px solid rgba(245,197,66,0.28); }
+.intensity-badge.hard    { background: rgba(255,60,46,0.12);   color: var(--hard-c);     border: 1px solid rgba(255,60,46,0.28); }
+
+/* Boxing tip */
+.boxing-tip { font-size: 11.5px; color: #a09db0; line-height: 1.5; background: rgba(255,255,255,0.025); padding: 8px 11px; border-radius: 4px; border-left: 2px solid var(--accent); margin-bottom: 12px; }
+
+/* EXERCISE LIST */
+.exercise-list { list-style: none; }
+.exercise-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: opacity 0.15s; user-select: none; }
+.exercise-item:last-child { border-bottom: none; }
+.exercise-item:hover .ex-checkbox { border-color: var(--green); }
+.exercise-item.ex-done { opacity: 0.4; }
+.exercise-item.ex-done .ex-name { text-decoration: line-through; text-decoration-color: var(--muted); }
+.ex-checkbox { width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 3px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; }
+.exercise-item.ex-done .ex-checkbox { background: rgba(92,186,92,0.18); border-color: var(--green); color: var(--green); }
+.ex-text { flex: 1; }
+.ex-name { font-size: 13.5px; font-weight: 500; color: var(--text); line-height: 1.3; }
+.ex-sets { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
+
+/* ROUND LIST */
+.round-list { list-style: none; }
+.round-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: opacity 0.15s; user-select: none; }
+.round-item:last-child { border-bottom: none; }
+.round-item:hover .round-num { border-color: var(--accent); color: var(--accent); }
+.round-item.rnd-done { opacity: 0.4; }
+.round-item.rnd-done .rnd-focus { text-decoration: line-through; text-decoration-color: var(--muted); }
+.round-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 3px 8px; color: var(--muted); flex-shrink: 0; margin-top: 1px; transition: all 0.15s; white-space: nowrap; }
+.round-item.rnd-done .round-num { background: rgba(92,186,92,0.15); border-color: var(--green); color: var(--green); }
+.rnd-focus { font-size: 13px; font-weight: 400; color: var(--text); line-height: 1.4; }
+
+/* REST DAY */
+.rest-day-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px 24px; text-align: center; grid-column: 1/-1; }
+.rest-icon { font-size: 38px; margin-bottom: 10px; }
+.rest-day-card h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 800; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.rest-day-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+/* OVERVIEW */
+.week-overview { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-top: 26px; }
+.overview-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px; }
+@media(max-width:480px){ .overview-grid{grid-template-columns:repeat(4,1fr);} }
+.overview-day { text-align: center; padding: 9px 4px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: border-color 0.15s; }
+.overview-day:hover { border-color: var(--muted); }
+.overview-day.active-day { border-color: var(--accent); }
+.overview-day-name { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.overview-day.active-day .overview-day-name { color: var(--accent); }
+.overview-pips { display: flex; gap: 3px; justify-content: center; margin-top: 5px; min-height: 10px; }
+.pip { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
+.pip.done { background: var(--green); }
+
+/* TOAST */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; z-index: 1000; transition: transform 0.3s ease, opacity 0.3s; opacity: 0; white-space: nowrap; pointer-events: none; }
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.success { border-color: var(--green); color: var(--green); }
+.toast.info { border-color: var(--blue); color: var(--blue); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="header-left">
+      <h1>Boxing &<br><em>Training</em></h1>
+      <p>Sun–Sat. Morning strength + Evening boxing. Check off every exercise and round as you go.</p>
+    </div>
+    <div class="header-right">
+      <div class="progress-ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle class="ring-bg" cx="36" cy="36" r="30"/>
+          <circle class="ring-fill" id="ringFill" cx="36" cy="36" r="30" stroke-dasharray="188.5" stroke-dashoffset="188.5"/>
+        </svg>
+        <div class="ring-label" id="ringLabel">0 / 0</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="tip-banner">
+    <div class="tip-icon">⚡</div>
+    <div class="tip-content">
+      <strong>Daily Rule:</strong> Heavy morning → Light evening boxing &nbsp;·&nbsp;
+      Cardio morning → Hard boxing evening &nbsp;·&nbsp;
+      Legs day → Very light or rest boxing. Quality &amp; recovery are everything.
+    </div>
+  </div>
+
+  <!-- ROUND TIMER -->
+  <div class="timer-section">
+    <div class="section-title">🥊 Round Timer</div>
+    <div class="timer-layout">
+      <div class="timer-display">
+        <div class="timer-phase idle" id="timerPhase">READY</div>
+        <div class="timer-clock idle" id="timerClock">3:00</div>
+        <div class="timer-sub">3 min work · 1 min rest</div>
+      </div>
+      <div class="timer-divider"></div>
+      <div>
+        <div class="rounds-display">
+          <div class="rounds-num" id="roundDisplay">1</div>
+          <div class="rounds-label">Round <span id="roundTotal">/ 6</span></div>
+        </div>
+        <div class="rounds-adj">
+          <button class="btn-round-adj" onclick="adjustRounds(-1)">−</button>
+          <div style="font-family:'Barlow Condensed';font-size:11px;color:var(--muted);display:flex;align-items:center;padding:0 6px;letter-spacing:1px;text-transform:uppercase;">Rounds</div>
+          <button class="btn-round-adj" onclick="adjustRounds(1)">+</button>
+        </div>
+        <div class="timer-buttons">
+          <button class="btn btn-primary" id="timerStartBtn" onclick="toggleTimer()">START</button>
+          <button class="btn btn-secondary" onclick="resetTimer()">RESET</button>
+        </div>
+      </div>
+    </div>
+    <div class="timer-progress-bar"><div class="timer-progress-fill" id="timerProgressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="week-tabs" id="weekTabs"></div>
+  <div class="day-view" id="dayView"></div>
+
+  <div class="week-overview">
+    <div class="section-title">Week Overview</div>
+    <div class="overview-grid" id="overviewGrid"></div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SCHEDULE = [
+  {
+    day: "Sunday", short: "SUN", badge: "Push (Heavy)",
+    morning: {
+      name: "Push — Heavy", type: "strength", intensity: "hard",
+      focus: "Chest · Shoulders · Triceps",
+      exercises: [
+        { name: "Bench Press",              sets: "4 × 5 reps" },
+        { name: "Overhead Shoulder Press",  sets: "3 × 6 reps" },
+        { name: "Incline Dumbbell Press",   sets: "3 × 8 reps" },
+        { name: "Lateral Raises",           sets: "3 × 12 reps" },
+        { name: "Triceps Pushdown",         sets: "3 × 10 reps" },
+        { name: "Jump Rope",                sets: "5 min — light activation finish" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Light Technical", type: "boxing", intensity: "light",
+      totalRounds: 4,
+      tip: "Heavy push morning → Keep it technical. No exhaustion. Just sharp technique.",
+      rounds: [
+        { num: "R1", focus: "Jab accuracy — clean sharp jabs, relaxed hands, no power" },
+        { num: "R2", focus: "Clean form — stance, guard position, weight transfer" },
+        { num: "R3", focus: "Guard + slipping — head movement, stay tight, no wild swings" },
+        { num: "R4", focus: "Free shadowboxing — put it all together, stay relaxed" }
+      ]
+    }
+  },
+  {
+    day: "Monday", short: "MON", badge: "Pull (Heavy)",
+    morning: {
+      name: "Pull — Heavy", type: "strength", intensity: "hard",
+      focus: "Back · Biceps",
+      exercises: [
+        { name: "Pull-ups / Lat Pulldown", sets: "4 × 6–8 reps" },
+        { name: "Barbell Row",             sets: "3 × 6 reps" },
+        { name: "Seated Cable Row",        sets: "3 × 8 reps" },
+        { name: "Bicep Curl",              sets: "3 × 10 reps" },
+        { name: "Hammer Curl",             sets: "3 × 10 reps" },
+        { name: "Light Cardio",            sets: "5 min — easy pace finish" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Light Movement", type: "boxing", intensity: "light",
+      totalRounds: 4,
+      tip: "Heavy pull day → Stay relaxed. Focus on movement and breathing, not power.",
+      rounds: [
+        { num: "R1", focus: "Footwork only — forward/back, lateral steps, no punching" },
+        { num: "R2", focus: "Jab–Cross — basic combo, focus on breathing rhythm" },
+        { num: "R3", focus: "Movement + jab — combine footwork with jabs smoothly" },
+        { num: "R4", focus: "Free shadowboxing — relaxed pace, no power punches" }
+      ]
+    }
+  },
+  {
+    day: "Tuesday", short: "TUE", badge: "Cardio + Hard Boxing",
+    morning: {
+      name: "Cardio — Conditioning", type: "cardio", intensity: "moderate",
+      focus: "Stamina for boxing",
+      exercises: [
+        { name: "Jump Rope",                       sets: "10–15 min continuous" },
+        { name: "Sprint Intervals / Cross Trainer", sets: "15–20 min — zone 3–4 heart rate" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Hard Rounds 🔥", type: "boxing", intensity: "hard",
+      totalRounds: 6,
+      tip: "Cardio morning = body is ready for this. Main fight day — push hard.",
+      rounds: [
+        { num: "R1", focus: "Speed punches — fast jab-cross, loosen up the body" },
+        { num: "R2", focus: "Footwork — angles, pivots, in-out movement with hands up" },
+        { num: "R3", focus: "Combo work — jab–cross–hook–uppercut, full 4-punch combos" },
+        { num: "R4", focus: "Defense — slips, rolls, parry, then counter immediately" },
+        { num: "R5", focus: "Conditioning — fast non-stop punching bursts, max output" },
+        { num: "R6", focus: "Full intensity — everything together, maximum effort" }
+      ]
+    }
+  },
+  {
+    day: "Wednesday", short: "WED", badge: "Push (Volume)",
+    morning: {
+      name: "Push — Volume", type: "strength", intensity: "moderate",
+      focus: "Form + Muscle Control",
+      exercises: [
+        { name: "Incline Dumbbell Press",   sets: "3 × 10 reps" },
+        { name: "Machine Chest Press",      sets: "3 × 10 reps" },
+        { name: "Dumbbell Shoulder Press",  sets: "3 × 10 reps" },
+        { name: "Lateral Raises",           sets: "3 × 15 reps" },
+        { name: "Triceps Dips",             sets: "3 × 10 reps" },
+        { name: "Jump Rope",                sets: "5–8 min — moderate pace finish" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Moderate Combos", type: "boxing", intensity: "moderate",
+      totalRounds: 5,
+      tip: "Not too easy, not too hard. Focus on combinations, angles, and control.",
+      rounds: [
+        { num: "R1", focus: "Warm up — jab-cross at 60%, find your rhythm" },
+        { num: "R2", focus: "3-punch combos — jab–cross–hook, clean execution" },
+        { num: "R3", focus: "Angles + pivots — step off after each combo, reset" },
+        { num: "R4", focus: "4-punch combos — jab–cross–hook–body shot" },
+        { num: "R5", focus: "Control — slow it down, nail your form and timing" }
+      ]
+    }
+  },
+  {
+    day: "Thursday", short: "THU", badge: "Pull (Volume)",
+    morning: {
+      name: "Pull — Volume", type: "strength", intensity: "moderate",
+      focus: "Back Control · Endurance",
+      exercises: [
+        { name: "Lat Pulldown",        sets: "3 × 10 reps" },
+        { name: "Dumbbell Row",        sets: "3 × 10 reps" },
+        { name: "Face Pulls",          sets: "3 × 12 reps" },
+        { name: "Bicep Curl",          sets: "3 × 12 reps" },
+        { name: "Reverse Curl",        sets: "3 × 12 reps" },
+        { name: "Easy Cardio",         sets: "5–8 min — easy recovery pace" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Defense & Counter", type: "boxing", intensity: "moderate",
+      totalRounds: 5,
+      tip: "Work smarter not harder. Focus on defense, timing, and clean counters.",
+      rounds: [
+        { num: "R1", focus: "Defense only — practice slipping jabs left and right" },
+        { num: "R2", focus: "Counter punching — slip incoming + return jab–cross" },
+        { num: "R3", focus: "Timing — wait for openings, don't chase, be patient" },
+        { num: "R4", focus: "Reaction drills — anticipate movement, react first" },
+        { num: "R5", focus: "Defense-first shadowboxing — defend then counter everything" }
+      ]
+    }
+  },
+  {
+    day: "Friday", short: "FRI", badge: "Legs (Power)",
+    morning: {
+      name: "Legs — Power", type: "strength", intensity: "hard",
+      focus: "Strength · Balance",
+      exercises: [
+        { name: "Squats",                sets: "4 × 5 reps" },
+        { name: "Romanian Deadlift",     sets: "3 × 6 reps" },
+        { name: "Walking Lunges",        sets: "3 × 8 reps each leg" },
+        { name: "Calf Raises",           sets: "3 × 15 reps" },
+        { name: "Plank",                 sets: "3 sets — core finisher" },
+        { name: "Leg Raises",            sets: "3 sets — core finisher" }
+      ]
+    },
+    evening: {
+      name: "Boxing — Very Light / Rest", type: "boxing", intensity: "light",
+      totalRounds: 3,
+      tip: "Legs are worked hard → 2–3 rounds MAX. Upper body only. Take full rest if very sore.",
+      rounds: [
+        { num: "R1", focus: "Slow shadowboxing — upper body movement only, no footwork stress" },
+        { num: "R2", focus: "Technique focus — jab accuracy, clean guard, relaxed shoulders" },
+        { num: "R3", focus: "Cool down — slow deliberate punches, deep breathing throughout" }
+      ]
+    }
+  },
+  {
+    day: "Saturday", short: "SAT", badge: "Rest Day",
+    isRest: true, morning: null, evening: null
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentDay = 0;
+let state = JSON.parse(localStorage.getItem('boxing-v3') || '{}');
+function save() { localStorage.setItem('boxing-v3', JSON.stringify(state)); }
+function getVal(k) { return !!state[k]; }
+function toggle(k) { state[k] = !state[k]; save(); }
+
+// Timer
+let timerInterval = null, timerRunning = false;
+let currentRound = 1, totalRounds = 6, isWorkPhase = true, timeLeft = 180;
+const WORK = 180, REST = 60;
+
+// ── COUNTS ────────────────────────────────────────────────────────────────────
+function itemCount(di, slot) {
+  const d = SCHEDULE[di]; if (!d || d.isRest) return 0;
+  const s = slot === 'morning' ? d.morning : d.evening;
+  if (!s) return 0;
+  return slot === 'morning' ? s.exercises.length : s.rounds.length;
+}
+function doneCount(di, slot) {
+  let n = 0, t = itemCount(di, slot);
+  for (let i = 0; i < t; i++) if (getVal(`d${di}_${slot}_${i}`)) n++;
+  return n;
+}
+function fullyDone(di, slot) { const t = itemCount(di, slot); return t > 0 && doneCount(di, slot) === t; }
+function grandTotal() { let t = 0; SCHEDULE.forEach((d,i) => { if (d.isRest) return; t += itemCount(i,'morning'); if (d.evening) t += itemCount(i,'evening'); }); return t; }
+function grandDone()  { let t = 0; SCHEDULE.forEach((d,i) => { if (d.isRest) return; t += doneCount(i,'morning'); if (d.evening) t += doneCount(i,'evening'); }); return t; }
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderTabs() {
+  const c = document.getElementById('weekTabs'); c.innerHTML = '';
+  SCHEDULE.forEach((d, i) => {
+    const done = d.isRest ? false : fullyDone(i,'morning') && (!d.evening || fullyDone(i,'evening'));
+    const btn = document.createElement('button');
+    btn.className = 'week-tab' + (i===currentDay?' active':'') + (done?' all-done':'');
+    btn.textContent = d.short;
+    btn.onclick = () => { currentDay = i; render(); };
+    c.appendChild(btn);
+  });
+}
+
+function renderDayView() {
+  const d = SCHEDULE[currentDay];
+  const c = document.getElementById('dayView');
+  if (d.isRest) {
+    c.innerHTML = `
+      <div class="day-header"><div class="day-name">${d.day}</div><div class="day-badge">${d.badge}</div></div>
+      <div class="sessions-grid"><div class="rest-day-card">
+        <div class="rest-icon">😴</div>
+        <h3>Full Rest Day</h3>
+        <p>Light walking · Stretching · Mobility work<br>No training today. Let your body rebuild.</p>
+      </div></div>`;
+    return;
+  }
+
+  const icon = { strength:'🏋️', cardio:'🏃', boxing:'🥊' };
+  const iLabel = { light:'Light', moderate:'Moderate', hard:'Hard' };
+  const di = currentDay;
+
+  function mPanel() {
+    const s = d.morning;
+    const dc = doneCount(di,'morning'), tc = itemCount(di,'morning');
+    const fdone = fullyDone(di,'morning');
+    const items = s.exercises.map((ex,i) => {
+      const done = getVal(`d${di}_morning_${i}`);
+      return `<li class="exercise-item${done?' ex-done':''}" onclick="toggleItem(${di},'morning',${i})">
+        <div class="ex-checkbox">${done?'✓':''}</div>
+        <div class="ex-text"><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets}</div></div>
+      </li>`;
+    }).join('');
+    return `<div class="session-panel${fdone?' done-panel':''}">
+      <div class="session-panel-header">
+        <span class="session-time-label">🌅 Morning</span>
+        <div class="session-header-right">
+          <span class="session-count">${dc}/${tc}</span>
+          <span class="session-type-icon">${icon[s.type]}</span>
+        </div>
+      </div>
+      <div class="session-body">
+        <div class="session-name">${s.name}</div>
+        <div class="session-focus">${s.focus}</div>
+        <span class="intensity-badge ${s.intensity}">${iLabel[s.intensity]}</span>
+        <ul class="exercise-list">${items}</ul>
+      </div>
+    </div>`;
+  }
+
+  function ePanel() {
+    if (!d.evening) return `<div class="rest-day-card"><div class="rest-icon">😴</div><h3>Rest Evening</h3><p>No evening session today.</p></div>`;
+    const s = d.evening;
+    const dc = doneCount(di,'evening'), tc = itemCount(di,'evening');
+    const fdone = fullyDone(di,'evening');
+    const items = s.rounds.map((r,i) => {
+      const done = getVal(`d${di}_evening_${i}`);
+      return `<li class="round-item${done?' rnd-done':''}" onclick="toggleItem(${di},'evening',${i})">
+        <div class="round-num">${r.num}</div>
+        <div class="rnd-focus">${r.focus}</div>
+      </li>`;
+    }).join('');
+    return `<div class="session-panel${fdone?' done-panel':''}">
+      <div class="session-panel-header">
+        <span class="session-time-label">🌙 Evening</span>
+        <div class="session-header-right">
+          <span class="session-count">${dc}/${tc} rounds</span>
+          <span class="session-type-icon">🥊</span>
+        </div>
+      </div>
+      <div class="session-body">
+        <div class="session-name">${s.name}</div>
+        <span class="intensity-badge ${s.intensity}">${iLabel[s.intensity]}</span>
+        <div class="boxing-tip">💡 ${s.tip}</div>
+        <ul class="round-list">${items}</ul>
+      </div>
+    </div>`;
+  }
+
+  c.innerHTML = `
+    <div class="day-header"><div class="day-name">${d.day}</div><div class="day-badge">${d.badge}</div></div>
+    <div class="sessions-grid">${mPanel()}${ePanel()}</div>`;
+}
+
+function renderOverview() {
+  const c = document.getElementById('overviewGrid'); c.innerHTML = '';
+  SCHEDULE.forEach((d, i) => {
+    const mD = d.isRest ? false : fullyDone(i,'morning');
+    const eD = d.isRest ? false : (d.evening ? fullyDone(i,'evening') : false);
+    const div = document.createElement('div');
+    div.className = 'overview-day' + (i===currentDay?' active-day':'');
+    div.onclick = () => { currentDay = i; render(); };
+    div.innerHTML = `<div class="overview-day-name">${d.short}</div>
+      <div class="overview-pips">
+        ${!d.isRest ? `<div class="pip${mD?' done':''}"></div>` : ''}
+        ${(!d.isRest && d.evening) ? `<div class="pip${eD?' done':''}"></div>` : ''}
+        ${d.isRest ? `<div style="font-size:9px;color:var(--muted);margin-top:3px;">–</div>` : ''}
+      </div>`;
+    c.appendChild(div);
+  });
+}
+
+function renderProgress() {
+  const done = grandDone(), total = grandTotal();
+  const pct = total > 0 ? done/total : 0;
+  document.getElementById('ringFill').style.strokeDashoffset = 188.5*(1-pct);
+  document.getElementById('ringLabel').textContent = `${done} / ${total}`;
+}
+
+function render() { renderTabs(); renderDayView(); renderOverview(); renderProgress(); }
+
+// ── INTERACTIONS ──────────────────────────────────────────────────────────────
+function toggleItem(di, slot, idx) {
+  const k = `d${di}_${slot}_${idx}`;
+  toggle(k);
+  showToast(state[k] ? '✓ Done!' : 'Unchecked', state[k] ? 'success' : 'info');
+  render();
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────────
+function updateTimerUI() {
+  const m = Math.floor(timeLeft/60), s = timeLeft%60;
+  const cl = document.getElementById('timerClock'), ph = document.getElementById('timerPhase');
+  cl.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  const phase = (!timerRunning && currentRound===1 && isWorkPhase) ? 'idle' : (isWorkPhase ? 'work' : 'rest');
+  cl.className = `timer-clock ${phase}`;
+  ph.className = `timer-phase ${phase}`;
+  ph.textContent = phase==='idle' ? 'READY' : isWorkPhase ? 'WORK' : 'REST';
+  document.getElementById('roundDisplay').textContent = currentRound;
+  document.getElementById('roundTotal').textContent = `/ ${totalRounds}`;
+  const total = isWorkPhase ? WORK : REST;
+  const fill = document.getElementById('timerProgressFill');
+  fill.style.width = (((total-timeLeft)/total)*100)+'%';
+  fill.style.background = isWorkPhase ? 'var(--accent)' : 'var(--blue)';
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval); timerRunning = false;
+    document.getElementById('timerStartBtn').textContent = 'RESUME';
+  } else {
+    timerRunning = true;
+    document.getElementById('timerStartBtn').textContent = 'PAUSE';
+    timerInterval = setInterval(tick, 1000);
+  }
+}
+
+function tick() {
+  if (timeLeft > 0) { timeLeft--; updateTimerUI(); return; }
+  if (isWorkPhase) {
+    if (currentRound >= totalRounds) {
+      clearInterval(timerInterval); timerRunning = false;
+      document.getElementById('timerStartBtn').textContent = 'START';
+      document.getElementById('timerPhase').textContent = 'DONE!';
+      document.getElementById('timerPhase').className = 'timer-phase work';
+      document.getElementById('timerProgressFill').style.width = '100%';
+      showToast(`🥊 ${totalRounds} Rounds Complete!`, 'success'); bellPulse(); return;
+    }
+    isWorkPhase = false; timeLeft = REST;
+    showToast('Rest — 1 minute', 'info'); bellPulse();
+  } else {
+    isWorkPhase = true; currentRound++; timeLeft = WORK;
+    showToast(`Round ${currentRound}!`, 'info'); bellPulse();
+  }
+  updateTimerUI();
+}
+
+function bellPulse() {
+  const el = document.getElementById('timerClock');
+  el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse');
+  setTimeout(() => el.classList.remove('pulse'), 1200);
+}
+
+function resetTimer() {
+  clearInterval(timerInterval); timerRunning = false; currentRound = 1;
+  isWorkPhase = true; timeLeft = WORK;
+  document.getElementById('timerStartBtn').textContent = 'START';
+  document.getElementById('timerProgressFill').style.width = '0%';
+  updateTimerUI();
+}
+
+function adjustRounds(delta) {
+  totalRounds = Math.max(1, Math.min(20, totalRounds+delta));
+  if (!timerRunning) resetTimer(); else updateTimerUI();
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let toastTO;
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  clearTimeout(toastTO);
+  toastTO = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+const todayJs = new Date().getDay(); // 0=Sun … 6=Sat
+currentDay = todayJs <= 6 ? todayJs : 0;
+updateTimerUI();
+render();
+</script>
+</body>
+</html>
