@@ -27,6 +27,9 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 .header-left h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 900; line-height: 0.95; text-transform: uppercase; letter-spacing: -1px; }
 .header-left h1 em { font-style: normal; color: var(--accent); }
 .header-left p { margin-top: 8px; font-size: 13px; color: var(--muted); max-width: 380px; line-height: 1.6; }
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.week-reset-info { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: right; }
+.week-reset-info span { color: var(--gold); }
 .progress-ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .progress-ring-wrap svg { transform: rotate(-90deg); }
 .ring-bg { fill: none; stroke: var(--border); stroke-width: 5; }
@@ -62,6 +65,8 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 .btn:active { transform: scale(0.96); }
 .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover { background: #ff5547; }
 .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); } .btn-secondary:hover { border-color: var(--muted); }
+.btn-danger { background: rgba(255,60,46,0.1); color: var(--accent); border: 1px solid rgba(255,60,46,0.3); font-size: 11px; padding: 6px 12px; }
+.btn-danger:hover { background: rgba(255,60,46,0.2); }
 .timer-progress-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 16px; overflow: hidden; }
 .timer-progress-fill { height: 100%; border-radius: 2px; transition: width 0.9s linear, background 0.3s; background: var(--accent); }
 @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(255,60,46,0)} 50%{box-shadow:0 0 0 12px rgba(255,60,46,0.18)} }
@@ -102,6 +107,9 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 .intensity-badge.light   { background: rgba(58,158,255,0.12);  color: var(--light-c);    border: 1px solid rgba(58,158,255,0.28); }
 .intensity-badge.moderate{ background: rgba(245,197,66,0.12);  color: var(--moderate-c); border: 1px solid rgba(245,197,66,0.28); }
 .intensity-badge.hard    { background: rgba(255,60,46,0.12);   color: var(--hard-c);     border: 1px solid rgba(255,60,46,0.28); }
+
+/* KB badge */
+.kb-tag { font-size: 9px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: rgba(245,197,66,0.1); color: var(--gold); border: 1px solid rgba(245,197,66,0.2); border-radius: 3px; padding: 1px 5px; margin-left: 5px; vertical-align: middle; }
 
 /* Boxing tip */
 .boxing-tip { font-size: 11.5px; color: #a09db0; line-height: 1.5; background: rgba(255,255,255,0.025); padding: 8px 11px; border-radius: 4px; border-left: 2px solid var(--accent); margin-bottom: 12px; }
@@ -149,6 +157,11 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--border); transition: background 0.2s; }
 .pip.done { background: var(--green); }
 
+/* RESET BANNER */
+.reset-banner { background: rgba(245,197,66,0.07); border: 1px solid rgba(245,197,66,0.25); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.reset-banner-text { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+.reset-banner-sub { font-size: 11px; color: var(--muted); font-family: 'Barlow', sans-serif; font-weight: 400; text-transform: none; letter-spacing: 0; margin-top: 2px; }
+
 /* TOAST */
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 11px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; z-index: 1000; transition: transform 0.3s ease, opacity 0.3s; opacity: 0; white-space: nowrap; pointer-events: none; }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -162,9 +175,10 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
   <header>
     <div class="header-left">
       <h1>Boxing &<br><em>Training</em></h1>
-      <p>Sun–Sat. Morning strength + Evening boxing. Check off every exercise and round as you go.</p>
+      <p>Sun–Sat. Morning strength + Evening boxing. Resets every Sunday. KB = Kettlebell exercise.</p>
     </div>
     <div class="header-right">
+      <div class="week-reset-info">Week resets <span>every Sunday</span></div>
       <div class="progress-ring-wrap">
         <svg width="72" height="72" viewBox="0 0 72 72">
           <circle class="ring-bg" cx="36" cy="36" r="30"/>
@@ -175,12 +189,20 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
     </div>
   </header>
 
+  <div id="resetBanner" style="display:none" class="reset-banner">
+    <div>
+      <div class="reset-banner-text">🔄 New Week Started</div>
+      <div class="reset-banner-sub">All checkboxes have been cleared for the new week. Let's go!</div>
+    </div>
+    <button class="btn btn-secondary" style="font-size:11px;padding:6px 12px;" onclick="document.getElementById('resetBanner').style.display='none'">DISMISS</button>
+  </div>
+
   <div class="tip-banner">
     <div class="tip-icon">⚡</div>
     <div class="tip-content">
       <strong>Daily Rule:</strong> Heavy morning → Light evening boxing &nbsp;·&nbsp;
       Cardio morning → Hard boxing evening &nbsp;·&nbsp;
-      Legs day → Very light or rest boxing. Quality &amp; recovery are everything.
+      Legs day → Very light or rest boxing. KB exercises build explosive power + endurance for boxing.
     </div>
   </div>
 
@@ -225,19 +247,23 @@ header { display: flex; align-items: flex-start; justify-content: space-between;
 <div class="toast" id="toast"></div>
 
 <script>
+// KB = Kettlebell tag appended in exercise name
+const KB = ' 🔔'; // rendered via .kb-tag in HTML
+
 const SCHEDULE = [
   {
-    day: "Sunday", short: "SUN", badge: "Push (Heavy)",
+    day: "Sunday", short: "SUN", badge: "Push Power + KB",
     morning: {
-      name: "Push — Heavy", type: "strength", intensity: "hard",
-      focus: "Chest · Shoulders · Triceps",
+      name: "Push Power + Kettlebell", type: "strength", intensity: "hard",
+      focus: "Chest · Shoulders · Triceps · Explosive Power",
       exercises: [
-        { name: "Bench Press",              sets: "4 × 5 reps" },
-        { name: "Overhead Shoulder Press",  sets: "3 × 6 reps" },
-        { name: "Incline Dumbbell Press",   sets: "3 × 8 reps" },
-        { name: "Lateral Raises",           sets: "3 × 12 reps" },
-        { name: "Triceps Pushdown",         sets: "3 × 10 reps" },
-        { name: "Jump Rope",                sets: "5 min — light activation finish" }
+        { name: "KB Single-Arm Press", sets: "4 × 6 each side — builds shoulder stability for hooks", kb: true },
+        { name: "KB Push Press", sets: "3 × 8 — leg drive into shoulder = boxing power transfer", kb: true },
+        { name: "Overhead Shoulder Press (DB)", sets: "3 × 8 reps" },
+        { name: "Push-Ups (Explosive)", sets: "3 × 12 — explode up, controlled down" },
+        { name: "Lateral Raises", sets: "3 × 12 reps" },
+        { name: "Triceps Pushdown", sets: "3 × 10 reps" },
+        { name: "Jump Rope", sets: "5 min — light activation finish" }
       ]
     },
     evening: {
@@ -253,17 +279,18 @@ const SCHEDULE = [
     }
   },
   {
-    day: "Monday", short: "MON", badge: "Pull (Heavy)",
+    day: "Monday", short: "MON", badge: "Pull + KB Endurance",
     morning: {
-      name: "Pull — Heavy", type: "strength", intensity: "hard",
-      focus: "Back · Biceps",
+      name: "Pull + KB Endurance", type: "strength", intensity: "hard",
+      focus: "Back · Biceps · Grip · Pulling Endurance",
       exercises: [
+        { name: "KB Single-Arm Row", sets: "4 × 8 each side — builds the pull in hooks & uppercuts", kb: true },
+        { name: "KB Renegade Row", sets: "3 × 6 each side — core stability + back strength", kb: true },
         { name: "Pull-ups / Lat Pulldown", sets: "4 × 6–8 reps" },
-        { name: "Barbell Row",             sets: "3 × 6 reps" },
-        { name: "Seated Cable Row",        sets: "3 × 8 reps" },
-        { name: "Bicep Curl",              sets: "3 × 10 reps" },
-        { name: "Hammer Curl",             sets: "3 × 10 reps" },
-        { name: "Light Cardio",            sets: "5 min — easy pace finish" }
+        { name: "Seated Cable Row", sets: "3 × 8 reps" },
+        { name: "Bicep Curl", sets: "3 × 10 reps" },
+        { name: "Hammer Curl", sets: "3 × 10 reps — builds forearm & punch endurance" },
+        { name: "Light Cardio", sets: "5 min — easy pace finish" }
       ]
     },
     evening: {
@@ -279,13 +306,15 @@ const SCHEDULE = [
     }
   },
   {
-    day: "Tuesday", short: "TUE", badge: "Cardio + Hard Boxing",
+    day: "Tuesday", short: "TUE", badge: "KB Cardio + Hard Boxing",
     morning: {
-      name: "Cardio — Conditioning", type: "cardio", intensity: "moderate",
-      focus: "Stamina for boxing",
+      name: "KB Cardio — Fight Conditioning", type: "cardio", intensity: "moderate",
+      focus: "Stamina · Explosive Endurance for Boxing",
       exercises: [
-        { name: "Jump Rope",                       sets: "10–15 min continuous" },
-        { name: "Sprint Intervals / Cross Trainer", sets: "15–20 min — zone 3–4 heart rate" }
+        { name: "KB Swings", sets: "5 × 20 reps — hips, posterior chain, cardio all at once", kb: true },
+        { name: "KB Clean & Press", sets: "4 × 6 each side — full body explosive power", kb: true },
+        { name: "Jump Rope", sets: "10 min continuous — boxing rhythm and footwork stamina" },
+        { name: "Sprint Intervals / Cross Trainer", sets: "15 min — zone 3–4 heart rate" }
       ]
     },
     evening: {
@@ -303,17 +332,18 @@ const SCHEDULE = [
     }
   },
   {
-    day: "Wednesday", short: "WED", badge: "Push (Volume)",
+    day: "Wednesday", short: "WED", badge: "Push Volume + KB",
     morning: {
-      name: "Push — Volume", type: "strength", intensity: "moderate",
-      focus: "Form + Muscle Control",
+      name: "Push Volume + KB Circuit", type: "strength", intensity: "moderate",
+      focus: "Form · Muscle Control · Shoulder Endurance",
       exercises: [
-        { name: "Incline Dumbbell Press",   sets: "3 × 10 reps" },
-        { name: "Machine Chest Press",      sets: "3 × 10 reps" },
-        { name: "Dumbbell Shoulder Press",  sets: "3 × 10 reps" },
-        { name: "Lateral Raises",           sets: "3 × 15 reps" },
-        { name: "Triceps Dips",             sets: "3 × 10 reps" },
-        { name: "Jump Rope",                sets: "5–8 min — moderate pace finish" }
+        { name: "KB Bottoms-Up Press", sets: "3 × 6 each — grip + shoulder stability, critical for guard", kb: true },
+        { name: "KB Alternating Push Press", sets: "3 × 8 each — power endurance for punching", kb: true },
+        { name: "Incline Dumbbell Press", sets: "3 × 10 reps" },
+        { name: "Dumbbell Shoulder Press", sets: "3 × 10 reps" },
+        { name: "Lateral Raises", sets: "3 × 15 reps" },
+        { name: "Triceps Dips", sets: "3 × 10 reps" },
+        { name: "Jump Rope", sets: "5–8 min — moderate pace finish" }
       ]
     },
     evening: {
@@ -330,17 +360,18 @@ const SCHEDULE = [
     }
   },
   {
-    day: "Thursday", short: "THU", badge: "Pull (Volume)",
+    day: "Thursday", short: "THU", badge: "Pull Volume + KB",
     morning: {
-      name: "Pull — Volume", type: "strength", intensity: "moderate",
-      focus: "Back Control · Endurance",
+      name: "Pull Volume + KB Stamina", type: "strength", intensity: "moderate",
+      focus: "Back Endurance · Grip Strength · Stamina",
       exercises: [
-        { name: "Lat Pulldown",        sets: "3 × 10 reps" },
-        { name: "Dumbbell Row",        sets: "3 × 10 reps" },
-        { name: "Face Pulls",          sets: "3 × 12 reps" },
-        { name: "Bicep Curl",          sets: "3 × 12 reps" },
-        { name: "Reverse Curl",        sets: "3 × 12 reps" },
-        { name: "Easy Cardio",         sets: "5–8 min — easy recovery pace" }
+        { name: "KB Swing (High Pull)", sets: "4 × 15 — posterior chain + shoulder endurance", kb: true },
+        { name: "KB Gorilla Row", sets: "3 × 8 each side — anti-rotation, core + back", kb: true },
+        { name: "Lat Pulldown", sets: "3 × 10 reps" },
+        { name: "Face Pulls", sets: "3 × 12 reps — protects shoulders, great for guard posture" },
+        { name: "Bicep Curl", sets: "3 × 12 reps" },
+        { name: "Reverse Curl", sets: "3 × 12 reps — forearm & wrist durability" },
+        { name: "Easy Cardio", sets: "5–8 min — easy recovery pace" }
       ]
     },
     evening: {
@@ -357,17 +388,18 @@ const SCHEDULE = [
     }
   },
   {
-    day: "Friday", short: "FRI", badge: "Legs (Power)",
+    day: "Friday", short: "FRI", badge: "Legs + KB Power",
     morning: {
-      name: "Legs — Power", type: "strength", intensity: "hard",
-      focus: "Strength · Balance",
+      name: "Legs + KB Explosive Power", type: "strength", intensity: "hard",
+      focus: "Leg Drive · Balance · Explosive Foundation for Punching",
       exercises: [
-        { name: "Squats",                sets: "4 × 5 reps" },
-        { name: "Romanian Deadlift",     sets: "3 × 6 reps" },
-        { name: "Walking Lunges",        sets: "3 × 8 reps each leg" },
-        { name: "Calf Raises",           sets: "3 × 15 reps" },
-        { name: "Plank",                 sets: "3 sets — core finisher" },
-        { name: "Leg Raises",            sets: "3 sets — core finisher" }
+        { name: "KB Goblet Squat", sets: "4 × 10 — builds squat pattern with core braced, boxing stance base", kb: true },
+        { name: "KB Romanian Deadlift (Single Leg)", sets: "3 × 8 each — balance, hamstring, hip stability", kb: true },
+        { name: "KB Swing", sets: "3 × 15 — hip hinge power = knockout punch power", kb: true },
+        { name: "Walking Lunges", sets: "3 × 8 reps each leg" },
+        { name: "Calf Raises", sets: "3 × 15 reps — explosive footwork foundation" },
+        { name: "Plank", sets: "3 × 45s — core finisher" },
+        { name: "Leg Raises", sets: "3 × 12 — core finisher" }
       ]
     },
     evening: {
@@ -387,10 +419,40 @@ const SCHEDULE = [
   }
 ];
 
+// ── WEEKLY RESET LOGIC ────────────────────────────────────────────────────────
+const STORAGE_KEY = 'boxing-v4';
+const WEEK_KEY = 'boxing-v4-week';
+
+function getCurrentWeekId() {
+  // Get ISO week number + year as unique key
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+  // Get the most recent Sunday
+  const dayOfWeek = now.getDay(); // 0=Sun
+  const sunday = new Date(now);
+  sunday.setDate(now.getDate() - dayOfWeek);
+  // Use sunday's date as week id: YYYY-MM-DD
+  return sunday.toISOString().split('T')[0];
+}
+
+function checkWeeklyReset() {
+  const currentWeek = getCurrentWeekId();
+  const lastWeek = localStorage.getItem(WEEK_KEY);
+  if (lastWeek !== currentWeek) {
+    // New week → clear all checkbox state
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.setItem(WEEK_KEY, currentWeek);
+    return true; // reset happened
+  }
+  return false;
+}
+
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let currentDay = 0;
-let state = JSON.parse(localStorage.getItem('boxing-v3') || '{}');
-function save() { localStorage.setItem('boxing-v3', JSON.stringify(state)); }
+let didReset = checkWeeklyReset();
+let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function getVal(k) { return !!state[k]; }
 function toggle(k) { state[k] = !state[k]; save(); }
 
@@ -452,9 +514,10 @@ function renderDayView() {
     const fdone = fullyDone(di,'morning');
     const items = s.exercises.map((ex,i) => {
       const done = getVal(`d${di}_morning_${i}`);
+      const kbTag = ex.kb ? `<span class="kb-tag">KB</span>` : '';
       return `<li class="exercise-item${done?' ex-done':''}" onclick="toggleItem(${di},'morning',${i})">
         <div class="ex-checkbox">${done?'✓':''}</div>
-        <div class="ex-text"><div class="ex-name">${ex.name}</div><div class="ex-sets">${ex.sets}</div></div>
+        <div class="ex-text"><div class="ex-name">${ex.name}${kbTag}</div><div class="ex-sets">${ex.sets}</div></div>
       </li>`;
     }).join('');
     return `<div class="session-panel${fdone?' done-panel':''}">
@@ -622,6 +685,11 @@ function showToast(msg, type='info') {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 const todayJs = new Date().getDay(); // 0=Sun … 6=Sat
 currentDay = todayJs <= 6 ? todayJs : 0;
+
+if (didReset) {
+  document.getElementById('resetBanner').style.display = 'flex';
+}
+
 updateTimerUI();
 render();
 </script>
